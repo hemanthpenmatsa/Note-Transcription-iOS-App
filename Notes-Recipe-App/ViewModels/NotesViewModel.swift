@@ -1,54 +1,75 @@
 import Foundation
+import CoreData
 
-import Combine
+class NotesViewModel: ObservableObject {
 
-final class NotesViewModel: ObservableObject {
-    @Published private var notes: [Note] = []
-    private let persistenceController: PersistenceController
-    
-    init(persistenceController: PersistenceController) {
-        self.persistenceController = persistenceController
-        loadNotes()
+    let manager: CoreDataManager
+    @Published var notes: [NoteEntity] = []
+    @Published var isDataLoaded = false
+
+    init(manager: CoreDataManager) {
+        self.manager = manager
+        loadData()
     }
     
-    var allNotes: [Note] {
-        notes
-    }
-    
-    func createNote(title: String, content: String, folderId: UUID? = nil) -> Note {
-        let note = Note(title: title, content: content, folderId: folderId)
-        notes.append(note)
-        saveNote(note)
-        return note
-    }
-    
-    func updateNote(_ note: Note, title: String? = nil, content: String? = nil, folderId: UUID? = nil) {
-        if let index = notes.firstIndex(where: { $0.id == note.id }) {
-            notes[index].update(title: title, content: content, folderId: folderId)
-            saveNote(notes[index])
+    func loadData() {
+        manager.loadCoreData { [weak self] success in
+            DispatchQueue.main.async {
+                self?.isDataLoaded = success
+                if success {
+                    self?.fetchNotes()
+                }
+            }
         }
     }
-    
-    func deleteNote(_ note: Note) {
-        if let index = notes.firstIndex(where: { $0.id == note.id }) {
-            notes.remove(at: index)
-            deleteNoteFromStorage(note)
+
+    func fetchNotes(with searchText: String = "")  {
+        let request: NSFetchRequest<NoteEntity> = NoteEntity.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
+        
+        if !searchText.isEmpty {
+            request.predicate = NSPredicate(format: "title CONTAINS %@", searchText)
+        }
+
+        do {
+            notes = try manager.container.viewContext.fetch(request)
+        } catch {
+            print("Error fetching notes: \(error)")
         }
     }
-    
-    private func loadNotes() {
-        // TODO: Implement loading notes from persistence
+
+    func createNote() -> NoteEntity {
+        let newNote = NoteEntity(context: manager.container.viewContext)
+        newNote.id = UUID()
+        newNote.timestamp = Date()
+        saveContext()
+        fetchNotes() // Refresh notes list
+        
+        return newNote
+    }
+
+    func deleteNote(_ note: NoteEntity) {
+        manager.container.viewContext.delete(note)
+        saveContext()
+        fetchNotes() // Refresh notes list
+    }
+
+    func updateNote(_ note: NoteEntity, title: String, content: String) {
+        note.title = title
+        note.content = content
+        saveContext()
+        fetchNotes() // Refresh notes list
     }
     
-    private func saveNote(_ note: Note) {
-        // TODO: Implement saving note to persistence
+    func searchNotes(with searchText: String) {
+        fetchNotes(with: searchText)
     }
-    
-    private func deleteNoteFromStorage(_ note: Note) {
-        // TODO: Implement deleting note from persistence
-    }
-    
-    func getNotes(inFolder folderId: UUID?) -> [Note] {
-        notes.filter { $0.folderId == folderId }
+
+    private func saveContext() {
+        do {
+            try manager.container.viewContext.save()
+        } catch {
+            print("Error saving context: \(error)")
+        }
     }
 }

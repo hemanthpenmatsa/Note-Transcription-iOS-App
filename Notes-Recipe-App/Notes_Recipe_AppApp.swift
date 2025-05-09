@@ -1,20 +1,21 @@
-//
-//  Notes_Recipe_AppApp.swift
-//  Notes-Recipe-App
-//
-//  Created by Hemanth Penmatsa on 5/8/25.
-//
 
 import SwiftUI
 
 @main
-struct Notes_Recipe_AppApp: App {
-    let persistenceController = PersistenceController.shared
+struct NotesToDocApp: App {
+    let coreDataManager = CoreDataManager()
+    @StateObject var notesViewModel: NotesViewModel
+
+        init() {
+            let viewModel = NotesViewModel(manager: coreDataManager)
+            _notesViewModel = StateObject(wrappedValue: viewModel)
+        }
+
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(notesViewModel)
         }
     }
 }
