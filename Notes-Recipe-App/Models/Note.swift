@@ -1,7 +1,7 @@
 import Foundation
 
 @Observable
-final class Note {
+final class Note: Identifiable {
     let id: UUID
     var title: String
     var content: String

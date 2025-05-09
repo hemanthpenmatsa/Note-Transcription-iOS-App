@@ -1,0 +1,19 @@
+{
+	"name": "xcode build server",
+	"version": "0.2",
+	"bspVersion": "2.0",
+	"languages": [
+		"c",
+		"cpp",
+		"objective-c",
+		"objective-cpp",
+		"swift"
+	],
+	"argv": [
+		"/opt/homebrew/bin/xcode-build-server"
+	],
+	"workspace": "/Users/hemanthpenmatsa/Downloads/Notes-Recipe-App/Notes-Recipe-App.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/hemanthpenmatsa/Library/Developer/Xcode/DerivedData/Notes-Recipe-App-griijkcdrbdnyoerwnqkpobnrtvr",
+	"scheme": "Notes-Recipe-App",
+	"kind": "xcode"
+}

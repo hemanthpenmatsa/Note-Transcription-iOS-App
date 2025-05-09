@@ -13,7 +13,7 @@ struct NotesListView: View {
             List {
                 ForEach(viewModel.allNotes) { note in
                     NavigationLink {
-                        NoteDetailView(note: note)
+                        NoteDetailView(note: note, viewModel: viewModel)
                     } label: {
                         NoteRowView(note: note)
                     }

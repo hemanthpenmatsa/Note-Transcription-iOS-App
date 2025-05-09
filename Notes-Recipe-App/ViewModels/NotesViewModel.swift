@@ -1,8 +1,9 @@
 import Foundation
 
-@Observable
-final class NotesViewModel {
-    private var notes: [Note] = []
+import Combine
+
+final class NotesViewModel: ObservableObject {
+    @Published private var notes: [Note] = []
     private let persistenceController: PersistenceController
     
     init(persistenceController: PersistenceController) {
